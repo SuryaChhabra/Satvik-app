@@ -2,27 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
+html, body {
   background-color: #FBF9F4;
   color: #2E2A24;
   font-feature-settings: "ss01" on, "cv11" on;
 }
+::selection { background: #C2D2B8; color: #2E2A24; }
 
-::selection {
-  background: #C2D2B8;
-  color: #2E2A24;
+@keyframes sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50%      { transform: rotate(1.5deg); }
 }
+.sway { transform-origin: bottom center; animation: sway 4.5s ease-in-out infinite; }
 
-/* Soft scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
 }
-::-webkit-scrollbar-thumb {
-  background: #E0E8DB;
-  border-radius: 8px;
+.float-soft { animation: float 5s ease-in-out infinite; }
+
+@keyframes rainfall {
+  0%   { opacity: 0; transform: translateY(-20px); }
+  20%  { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(120px); }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #C2D2B8;
-}
+.rain-drop { animation: rainfall 1.4s linear infinite; }

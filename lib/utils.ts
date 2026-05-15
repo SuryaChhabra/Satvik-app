@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Level, Season } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -9,73 +10,38 @@ export function uid(prefix = "id") {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-3)}`;
 }
 
-export function downloadFile(filename: string, content: string, mime = "text/plain") {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+export function levelFromSeeds(seeds: number): Level {
+  if (seeds >= 5000) return "Guide";
+  if (seeds >= 3000) return "Radiance";
+  if (seeds >= 1800) return "Fruit";
+  if (seeds >= 1000) return "Bloom";
+  if (seeds >= 600)  return "Leaf";
+  if (seeds >= 300)  return "Sapling";
+  if (seeds >= 100)  return "Sprout";
+  return "Seed";
 }
 
-export function csvEscape(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes("\"") || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
+export function growthStateFromSeeds(seeds: number): 1 | 2 | 3 {
+  if (seeds < 80) return 1;
+  if (seeds < 250) return 2;
+  return 3;
 }
 
-export function toCsv(rows: Record<string, unknown>[], columns?: string[]): string {
-  if (!rows.length) return "";
-  const cols = columns ?? Object.keys(rows[0]);
-  const header = cols.join(",");
-  const body = rows.map((r) => cols.map((c) => csvEscape(r[c])).join(",")).join("\n");
-  return `${header}\n${body}`;
+export function seasonForDate(date = new Date()): Season {
+  const m = date.getMonth(); // 0..11
+  if (m >= 2 && m <= 3)   return "spring";  // Mar–Apr
+  if (m >= 4 && m <= 5)   return "summer";  // May–Jun
+  if (m >= 6 && m <= 8)   return "monsoon"; // Jul–Sep
+  if (m >= 9 && m <= 10)  return "autumn";  // Oct–Nov
+  return "winter";                          // Dec–Feb
 }
 
-export function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.replace(/\r\n/g, "\n").split("\n").filter((l) => l.trim().length);
-  if (!lines.length) return [];
-  const headers = splitCsvLine(lines[0]).map((h) => h.trim().toLowerCase().replace(/\s+/g, "_"));
-  return lines.slice(1).map((line) => {
-    const values = splitCsvLine(line);
-    const row: Record<string, string> = {};
-    headers.forEach((h, i) => (row[h] = (values[i] ?? "").trim()));
-    return row;
-  });
+export function todayKey() {
+  return new Date().toISOString().slice(0, 10);
 }
 
-function splitCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inQuotes) {
-      if (ch === '"' && line[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        cur += ch;
-      }
-    } else {
-      if (ch === ",") {
-        out.push(cur);
-        cur = "";
-      } else if (ch === '"') {
-        inQuotes = true;
-      } else {
-        cur += ch;
-      }
-    }
-  }
-  out.push(cur);
-  return out;
+export function daysBetween(aIso: string, bIso: string): number {
+  const a = new Date(aIso); a.setHours(0, 0, 0, 0);
+  const b = new Date(bIso); b.setHours(0, 0, 0, 0);
+  return Math.floor((b.getTime() - a.getTime()) / 86_400_000);
 }

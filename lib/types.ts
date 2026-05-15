@@ -1,164 +1,152 @@
-export type Sensitivity = "normal" | "health-sensitive" | "urgent" | "unknown";
-export type BotAnswerable = "yes" | "no" | "partial";
-export type Priority = "high" | "medium" | "low";
+export type Goal =
+  | "beginner"
+  | "digestion"
+  | "weight_balance"
+  | "family"
+  | "seasonal"
+  | "busy"
+  | "deep_practice";
 
-export const CATEGORIES = [
-  "Beginner confusion",
-  "Health-sensitive doubts",
-  "Product/program clarity",
-  "Recipe/lifestyle implementation",
-  "Trust/credibility",
-  "Pricing/payment",
-  "Order/access support",
-  "Retention/consistency",
-  "Seasonal wellness",
-  "Family adaptation",
-  "Content gap",
-  "Technical/app support",
-  "Other",
-] as const;
-export type Category = (typeof CATEGORIES)[number];
+export type PathId =
+  | "gentle_beginner"
+  | "digestion_support"
+  | "weight_balance"
+  | "family_satvic"
+  | "seasonal_wellness"
+  | "busy_lifestyle"
+  | "deep_practice";
 
-export const GAP_TYPES = [
-  "FAQ gap",
-  "Website copy gap",
-  "Product/program clarity gap",
-  "Trust/reassurance gap",
-  "Health/safety communication gap",
-  "Onboarding gap",
-  "Retention gap",
-  "Content gap",
-  "Seasonal content gap",
-  "Pricing/value gap",
-  "Post-purchase support gap",
-  "Bot flow gap",
-] as const;
-export type GapType = (typeof GAP_TYPES)[number];
+export type Level =
+  | "Seed"
+  | "Sprout"
+  | "Sapling"
+  | "Leaf"
+  | "Bloom"
+  | "Fruit"
+  | "Radiance"
+  | "Guide";
 
-export interface Question {
-  id: string;
-  raw_text: string;
-  channel?: string;
-  date?: string;
-  product?: string;
-  user_stage?: string;
-  current_reply?: string;
+export type Season = "spring" | "summer" | "monsoon" | "autumn" | "winter";
+
+export interface QuizAnswers {
+  goal?: Goal;
+  familiarity?: "new" | "some" | "follows" | "program";
+  struggle?: "start" | "stick" | "energy" | "info_overload" | "family";
+  time_minutes?: 5 | 15 | 30 | 60;
+  learning?: "video" | "read" | "recipe" | "audio";
+  family_size?: 1 | 2 | 3 | 4;
+  notification_time?: "morning" | "midday" | "evening" | "night" | "none";
+  ready_for_challenge?: "three" | "seven" | "later";
+}
+
+export interface UserProfile {
+  display_name: string;
+  city?: string;
+  language: "en";
+  current_path: PathId | null;
+  notification_time: string;     // human-readable: "morning" | "evening" ...
+  lite_mode: boolean;
   created_at: string;
 }
 
-export interface AnalysisResult {
-  id: string;
-  question_id: string;
-  question: string;
-  category: Category | string;
-  intent: string;
-  emotion: string;
-  user_stage: string;
-  sensitivity_level: Sensitivity;
-  bot_answerable: BotAnswerable;
-  escalation_needed: boolean;
-  gap_type: GapType | string;
-  suggested_whatsapp_reply: string;
-  suggested_email_reply: string;
-  recommended_action: string;
-  confidence_score: number;
-  channel?: string;
+export interface DailyHabit {
+  day_index: number;             // 1..7
+  title: string;                 // "Drink one glass of warm water"
+  lesson_title: string;
+  lesson_body: string;           // 1-paragraph lesson
+  estimated_minutes: number;
+  recipe_id?: string;
+  next_preview: string;
 }
 
-export interface FAQ {
-  id: string;
-  question: string;
-  short_answer: string;
-  detailed_answer: string;
-  placement: string[]; // website-home | product-page | program-page | checkout | app-onboarding | whatsapp-bot | email-support
-  sensitivity: "normal" | "health-sensitive" | "needs-disclaimer" | "human-review";
-  disclaimer_needed: boolean;
-  status: "suggested" | "approved" | "rejected";
-  source_question_ids: string[];
+export interface HabitLog {
+  day_index: number;
+  date: string;
+  status: "done" | "skipped";
+  reflection?: "easy" | "okay" | "hard";
 }
 
-export interface Template {
+export interface BadgeDef {
   id: string;
+  emoji: string;
+  title: string;
+  description: string;
+  earn_condition: string;
+}
+
+export interface ChallengeDef {
+  id: string;
+  title: string;
+  duration_days: 3 | 7 | 21;
+  category: "starter" | "seasonal" | "festival" | "family" | "recipe";
+  target_path?: PathId;
+  daily_structure: string[];     // headlines for each day
+  badge_id: string;
+  garden_unlock: string;         // species
+  notification_example: string;
+  next_recommended: string;
+}
+
+export interface ChallengeProgress {
+  id: string;
+  started_at: string;
+  current_day: number;
+  completed_at?: string;
+}
+
+export type PlantSpecies =
+  | "tulsi"
+  | "mint"
+  | "lemon"
+  | "mango"
+  | "coconut"
+  | "marigold"
+  | "pomegranate"
+  | "lotus"
+  | "tree_family"
+  | "jowar"
+  | "spice";
+
+export interface Plant {
+  id: string;
+  species: PlantSpecies;
+  reason: string;       // "Day 1 — warm water" | "Summer Cooling Challenge"
+  planted_at: string;
+}
+
+export interface GardenState {
+  growth_state: 1 | 2 | 3;  // sparse / growing / lush
+  season: Season;
+  plants: Plant[];
+  last_visited_at: string;
+  rain_until?: string;       // soft return animation timer
+}
+
+export interface UserState {
+  profile: UserProfile;
+  quiz_answers: QuizAnswers;
+  seeds: number;
+  level: Level;
+  rhythm_days_this_week: number;
+  grace_used_this_week: boolean;
+  last_active_at: string;
+  habit_logs: HabitLog[];
+  earned_badges: string[];
+  active_challenges: ChallengeProgress[];
+  completed_challenges: ChallengeProgress[];
+  saved_recipes: string[];
+  garden: GardenState;
+}
+
+export interface PathDef {
+  id: PathId;
   name: string;
-  category: string;
-  use_case: string;
-  whatsapp_version: string;
-  email_version: string;
-  tone_notes: string;
-  escalation_rule: string;
-  follow_up_message?: string;
-  related_faq_id?: string;
-}
-
-export interface Gap {
-  id: string;
-  title: string;
-  gap_type: GapType | string;
-  evidence: string[];
-  why_it_matters: string;
-  recommended_action: string;
-  priority: Priority;
-  owner: "support" | "growth" | "content" | "product" | "website";
-  suggested_output: string[];
-  source_question_ids: string[];
-}
-
-export interface BotFlowStep {
-  speaker: "bot" | "user";
-  text: string;
-  options?: string[];
-  escalation?: boolean;
-  linked_faq_id?: string;
-}
-
-export interface BotFlow {
-  id: string;
-  title: string;
-  trigger_category: string;
-  opening_message: string;
-  steps: BotFlowStep[];
-  escalation_rules: string[];
-  final_cta: string;
-}
-
-export interface InsightReport {
-  id: string;
-  date_range: string;
-  summary: string;
-  top_themes: string[];
-  top_hesitations: string[];
-  gaps: string[];
-  faq_recommendations: string[];
-  content_ideas: string[];
-  website_recommendations: string[];
-  support_workflow: string[];
-  bot_improvements: string[];
-  experiments: string[];
-  metrics: { label: string; value: string }[];
-}
-
-export interface AggregatedInsights {
-  top_categories: { category: string; count: number }[];
-  repeated_themes: string[];
-  faq_candidates: string[];
-  detected_gaps: string[];
-  content_ideas: string[];
-  website_recommendations: string[];
-  bot_flow_recommendations: string[];
-  weekly_summary: string;
-}
-
-export interface AnalyzeResponse {
-  results: AnalysisResult[];
-  insights: AggregatedInsights;
-  source: "openai" | "mock";
-}
-
-export interface BrandSettings {
-  tone_traits: string[];
-  ai_model: string;
-  health_disclaimer: string;
-  safety_rules: string[];
-  categories: string[];
-  use_mock: boolean;
+  emoji: string;
+  tagline: string;
+  rationale: string;
+  emotional_tone: string;
+  days: DailyHabit[];          // 7 days
+  starter_badge: string;
+  starter_plant: PlantSpecies;
+  example_notification: string;
 }
